@@ -1,0 +1,57 @@
+# ---- Plugins ----
+source /opt/homebrew/share/zsh-vi-mode/zsh-vi-mode.zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ---- Plugin Configuration ----
+# Use jk to escape to normal mode in zsh-vi-mode
+function zvm_after_init() {
+  zvm_bindkey viins 'jk' zvm_exit_insert_mode
+}
+# ---- nvim in tmux popup for editing the current zsh command line ----
+export EDITOR=nvim
+
+function zle-tmux-popup-nvim() {
+  # If not inside tmux, fall back to normal edit-command-line
+  if [[ -z "$TMUX" ]]; then
+    autoload -Uz edit-command-line
+    edit-command-line
+    return
+  fi
+
+  local tmpfile
+  tmpfile="$(mktemp -t zsh_cmdline.XXXXXX)" || return 1
+
+  # Write current buffer into temp file
+  print -r -- "$BUFFER" >| "$tmpfile"
+
+  # Open popup with nvim, block until it exits (-E)
+  # -E: close popup when command exits
+  tmux display-popup -E -w 90% -h 85% "nvim +'set ft=sh' '$tmpfile'"
+
+  # Read back edited command
+  BUFFER="$(<"$tmpfile")"
+  CURSOR=${#BUFFER}
+
+  rm -f "$tmpfile"
+
+  # Optional: go back to insert mode after returning
+  zle vi-insert
+}
+
+# Register a ZLE widget named "nvim" so you can do :nvim
+zle -N nvim zle-tmux-popup-nvim
+# ---- Starship Prompt ----
+eval "$(starship init zsh)"
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# Load machine-specific configurations (not tracked in git)
+[ -s "$HOME/.local.zshrc" ] && source "$HOME/.local.zshrc"
+
+# Auto-start tmux
+if command -v tmux >/dev/null 2>&1; then
+  if [[ -z "$TMUX" ]]; then
+    tmux attach -t main || tmux new -s main
+  fi
+fi
