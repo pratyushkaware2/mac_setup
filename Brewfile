@@ -11,11 +11,10 @@ brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 brew "zsh-vi-mode"
 
-# Editor & Dependencies
+# Editor & CLI Utilities (required for your zsh/tmux workflow)
 brew "neovim"
 brew "ripgrep"
-brew "fd"
 brew "pngpaste"
 
-# Fonts
+# Fonts (used in Ghostty config)
 cask "font-jetbrains-mono-nerd-font"
