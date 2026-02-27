@@ -22,7 +22,12 @@ brew bundle
 ### 2. Tmux
 - Link the config: `ln -s ~/mac-setup/tmux/tmux.conf ~/.tmux.conf`
 - Install TPM: `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
+- **Plugins included**:
+  - `tmux-plugins/tpm`: Plugin manager
+  - `egel/tmux-gruvbox`: Dark theme
+  - `tmux-plugins/tmux-prefix-highlight`: Visual indicator for prefix key
 - Press `Prefix + I` in tmux to install plugins.
+- **Clipboard**: Configured with `OSC 52` support (`set -s set-clipboard on`) to allow clipboard pass-through over SSH.
 
 ### 3. Ghostty
 - Link the config: `mkdir -p ~/Library/Application\ Support/com.mitchellh.ghostty/ && ln -s ~/mac-setup/ghostty/config ~/Library/Application\ Support/com.mitchellh.ghostty/config`
