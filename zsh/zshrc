@@ -46,12 +46,6 @@ eval "$(starship init zsh)"
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# Load machine-specific configurations (not tracked in git)
+# Load machine-specific configurations
 [ -s "$HOME/.local.zshrc" ] && source "$HOME/.local.zshrc"
 
-# Auto-start tmux
-if command -v tmux >/dev/null 2>&1; then
-  if [[ -z "$TMUX" ]]; then
-    tmux attach -t main || tmux new -s main
-  fi
-fi
