@@ -1,18 +1,51 @@
+# ---- Environment & Path ----
+export EDITOR=nvim
+export PATH="$HOME/.local/bin:$PATH"
+
+# ---- Initialize Completion System ----
+# Required for fzf-tab and smart completions
+autoload -Uz compinit
+compinit
+
 # ---- Plugins ----
-source /opt/homebrew/share/zsh-vi-mode/zsh-vi-mode.zsh
+
+# fzf shell integration
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[[ -f /opt/homebrew/opt/fzf/shell/completion.zsh ]] && source /opt/homebrew/opt/fzf/shell/completion.zsh
+[[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]] && source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+
+# fzf-tab (must be loaded after compinit)
+source "/opt/homebrew/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh"
+
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-vi-mode/zsh-vi-mode.zsh
+
+# Syntax highlighting should be loaded LAST
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # ---- Plugin Configuration ----
-# Use jk to escape to normal mode in zsh-vi-mode
+
+# zsh-autosuggestions
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# zsh-vi-mode & Keybindings
+# We use zvm_after_init to ensure bindings stick even after zsh-vi-mode initializes
 function zvm_after_init() {
+  # Use jk to escape to normal mode
   zvm_bindkey viins 'jk' zvm_exit_insert_mode
 }
-# ---- nvim in tmux popup for editing the current zsh command line ----
-export EDITOR=nvim
 
+# fzf-tab configuration
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:*' switch-group '<' '>'
+
+# ---- Custom Functions ----
+
+# nvim in tmux popup for editing the current zsh command line
 function zle-tmux-popup-nvim() {
-  # If not inside tmux, fall back to normal edit-command-line
   if [[ -z "$TMUX" ]]; then
     autoload -Uz edit-command-line
     edit-command-line
@@ -21,31 +54,22 @@ function zle-tmux-popup-nvim() {
 
   local tmpfile
   tmpfile="$(mktemp -t zsh_cmdline.XXXXXX)" || return 1
-
-  # Write current buffer into temp file
   print -r -- "$BUFFER" >| "$tmpfile"
-
-  # Open popup with nvim, block until it exits (-E)
-  # -E: close popup when command exits
   tmux display-popup -E -w 90% -h 85% "nvim +'set ft=sh' '$tmpfile'"
-
-  # Read back edited command
   BUFFER="$(<"$tmpfile")"
   CURSOR=${#BUFFER}
-
   rm -f "$tmpfile"
-
-  # Optional: go back to insert mode after returning
   zle vi-insert
 }
-
-# Register a ZLE widget named "nvim" so you can do :nvim
 zle -N nvim zle-tmux-popup-nvim
-# ---- Starship Prompt ----
-eval "$(starship init zsh)"
 
-export PATH="$HOME/.local/bin:$PATH"
+# ---- Aliases ----
+alias ls='eza --icons'
+alias ll='eza -l --icons --git'
+alias la='eza -la --icons --git'
+
+# ---- Prompt & External Configs ----
+eval "$(starship init zsh)"
 
 # Load machine-specific configurations
 [ -s "$HOME/.local.zshrc" ] && source "$HOME/.local.zshrc"
-
