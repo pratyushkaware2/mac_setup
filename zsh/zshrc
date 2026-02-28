@@ -35,6 +35,22 @@ function zvm_after_init() {
   zvm_bindkey viins 'jk' zvm_exit_insert_mode
 }
 
+# Include dotfiles in completions and glob
+setopt globdots
+
+# fzf: use fd to include hidden files (excluding .git)
+export FZF_DEFAULT_COMMAND='fd --hidden --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+
+_fzf_compgen_path() {
+  fd --hidden --exclude .git . "$1"
+}
+
+_fzf_compgen_dir() {
+  fd --type d --hidden --exclude .git . "$1"
+}
+
 # fzf-tab configuration
 zstyle ':completion:*:git-checkout:*' sort false
 zstyle ':completion:*:descriptions' format '[%d]'
